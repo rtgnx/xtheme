@@ -31,7 +31,7 @@ def touch(fname, times=None):
     os.utime(fname, times)
 
 def fread(fpath):
-  with open(fname, 'r') as fd:
+  with open(fpath, 'r') as fd:
     return fd.read()
 
 def fwrite(fpath, data):
@@ -52,8 +52,8 @@ def load_generators():
   gens = {}
   for g in list_generators():
     path = join(GENERATORS, g)
-    gens[g] = {'template':  fread(join(GENERATORS, 'template.jinja'))}
-    settings = toml.loads(fread(join(GENERATORS, 'settings.toml')))
+    gens[g] = {'template':  fread(join(path, 'template.jinja'))}
+    settings = toml.loads(fread(join(path, 'settings.toml')))
 
     gens[g] = {**gens[g], **settings}
     if not has_keys(gens[g], ['name', 'target', 'pre-apply', 'post-apply']):
