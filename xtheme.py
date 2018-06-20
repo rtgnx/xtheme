@@ -57,7 +57,7 @@ def load_generators():
     settings = toml.loads(fread(join(path, 'settings.toml')))
 
     gens[g] = {**gens[g], **settings}
-    if not has_keys(gens[g], ['name', 'target', 'pre-apply', 'post-apply']):
+    if not has_keys(gens[g]['settings'], ['name', 'target', 'pre-apply', 'post-apply']):
       del gens[g]
       continue
 
@@ -142,8 +142,10 @@ def apply(theme):
   with open(path, 'r') as fd:
     theme = toml.loads(fd.read())
 
-  for g in load_generators():
-    apply_theme(theme, g)
+  gens = load_generators()
+
+  for g in gens.keys():
+    apply_theme(theme, gens[g])
 
 
 def main():
