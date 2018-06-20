@@ -18,8 +18,9 @@ class Generator(object):
   def __init__(self, name, target, template=None):
     self.name = name
     self.target = target
+    self.template = template
 
-    if template is None and isfile(target):
+    if self.template is None and isfile(target):
       with open(target, 'r') as fd:
         self.template = fd.read()
 
