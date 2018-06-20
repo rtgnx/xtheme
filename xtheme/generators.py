@@ -1,6 +1,6 @@
 import toml
 
-from .helpers import fread, fwrite
+from .helpers import fread, fwrite, has_keys
 
 from jinja2 import Template
 from subprocess import check_output
@@ -40,9 +40,19 @@ class Generator(object):
   def load(name):
     root = join(GENERATORS, name)
     temp = fread(join(root, 'template.jinja2'))
+
+    if temp is None:
+      printf("[-] Template file missing in: %s" % name)
+      return None
+
     conf = toml.loads(fread(join(root, 'config.toml')))
 
-    if 'config' not in conf.keys() or not has_keys(['name', 'target']):
+    if 'config' not in conf.keys():
+      print("[-] Invalid config file in: %s" % name)
+      return None
+
+    conf = conf['config']
+    if not has_keys(conf, ['name', 'target']):
       return None
 
     return Generator(name=conf['name'], target=conf['target'], template=temp)
