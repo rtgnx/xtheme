@@ -3,3 +3,4 @@ dist/
 *pycache*
 *.egg-info
 .eggs/
+.pytest_cache/
