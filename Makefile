@@ -10,3 +10,6 @@ test: image
 
 build: setup.py
 	python3 setup.py sdist bdist_wheel
+
+clean:
+	rm -rf .eggs/ *.egg-info build/* dist/*
