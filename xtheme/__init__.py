@@ -75,7 +75,12 @@ def exec_script(path, stderr=False):
 def apply_theme(theme, gen):
   exec_script(gen['settings']['pre-apply'])
   res = Template(gen['template']).render(**theme)
-  fwrite(gen['settings']['target'], res)
+  target = gen['settings']['target']
+
+  if "$HOME" in target:
+    target = target.replace("$HOME", os.getenv("HOME", ""))
+
+  fwrite(target, res)
 
 
 @click.group()
