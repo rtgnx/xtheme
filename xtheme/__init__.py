@@ -38,16 +38,23 @@ def generator(generator, target):
 @click.command("apply", help="apply theme")
 @click.argument("theme")
 def apply(theme):
-  theme = Theme.load(theme)
+
+  theme = Theme.load(theme + '.toml')
 
   if theme is None:
     return
 
+  click.echo("Applying theme %s" % theme.name)
+
   for gen in Generator.list():
     gen = Generator.load(gen)
 
+    if gen is None:
+      continue
+
     if gen is not None:
       gen.apply(theme)
+      click.echo("[+] %s" % gen.name)
 
 @click.command("list", help="list resources")
 @click.option("--theme", "theme", is_flag=True, help="List available themes")
