@@ -109,7 +109,7 @@ def generator(new, ls):
   path = "%s/%s" % ( GENERATORS, new)
   os.mkdir(path)
   touch("%s/%s.toml" % (path, "settings"))
-  touch("%s/%s.pongo" % (path, "template"))
+  touch("%s/%s.jinja" % (path, "template"))
   touch("%s/pre-apply.sh" % path)
   touch("%s/post-apply.sh" % path)
   pass
