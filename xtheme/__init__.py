@@ -11,6 +11,7 @@ from subprocess import check_output
 from .themes import Theme
 from .generators import Generator
 
+name = "xtheme"
 
 XTHEME_DIR = getenv('XTHEME_DIR', getenv('HOME') + '/.config/xtheme')
 
