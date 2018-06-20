@@ -2,155 +2,64 @@ import os
 import sys
 import toml
 import click
+
+from os import getenv
 from jinja2 import Template
+from os.path import isdir, isfile, join
 from subprocess import check_output
 
-from os.path import isdir, isfile, join
+from .themes import Theme
+from .generators import Generator
 
-# Get config directory from $XTHEME_DIR (default $HOME/.config/xtheme)
-XTHEME_DIR = os.getenv('XTHEME_DIR', os.getenv('HOME') + '/.config/xtheme')
-THEMES     = XTHEME_DIR + "/themes"
-GENERATORS = XTHEME_DIR + "/generators"
-HOOK_SHEBANG = "#!/bin/sh"
 
-GEN_SETTINGS_TEMPLATE = {
-  'settings': {
-    'name': '%s', 'target': '%s', 'pre-apply': '%s', 'post-apply': '%s'
-  }
-}
-
-THEME_TEMPLATE = {'colors': {'color%d' % i: '#fff' for i in range(0, 15)}}
+XTHEME_DIR = getenv('XTHEME_DIR', getenv('HOME') + '/.config/xtheme')
 
 if not isdir(XTHEME_DIR):
   os.mkdir(XTHEME_DIR)
-  os.mkdir(XTHEME_DIR + "/themes")
-  os.mkdir(XTHEME_DIR + "/generators")
-
-
-def touch(fname, times=None):
-  with open(fname, 'a'):
-    os.utime(fname, times)
-
-def fread(fpath):
-  with open(fpath, 'r') as fd:
-    return fd.read()
-
-def fwrite(fpath, data):
-  with open(fpath, 'w') as fd:
-    fd.write(data)
-
-# just becaue I can do it in one line :D
-def has_keys(d, keys):
-  return len([k for k in keys if k not in d.keys()]) == 0
-
-def list_themes():
-  return [f for f in os.listdir(THEMES) if isfile(join(THEMES, f))]
-
-def list_generators():
-  return [f for f in os.listdir(GENERATORS) if isdir(join(GENERATORS, f))]
-
-def load_generators():
-  gens = {}
-  for g in list_generators():
-    path = join(GENERATORS, g)
-    gens[g] = {'template':  fread(join(path, 'template.jinja'))}
-    settings = toml.loads(fread(join(path, 'settings.toml')))
-
-    gens[g] = {**gens[g], **settings}
-    if not has_keys(gens[g]['settings'], ['name', 'target', 'pre-apply', 'post-apply']):
-      del gens[g]
-      continue
-
-  return gens
-
-
-def exec_script(path, stderr=False):
-  if not isfile(path):
-    return
-
-  out = check_output([path])
-  if stderr:
-    sys.stderr.write(out)
-
-def apply_theme(theme, gen):
-  exec_script(gen['settings']['pre-apply'])
-  res = Template(gen['template']).render(**theme)
-  target = gen['settings']['target']
-
-  if "$HOME" in target:
-    target = target.replace("$HOME", os.getenv("HOME", ""))
-
-  fwrite(target, res)
-
+  for d in ['themes', 'generators']:
+    if not isdir(join("%s/%s" % (XTHEME_DIR, d))):
+      os.mkdir(join("%s/%s" % (XTHEME_DIR, d)))
 
 @click.group()
 def cli():
   pass
 
-
 @click.command("theme", help="manage themes")
-@click.option('--new', 'new', help='New theme name')
+@click.argument("theme")
 @click.option('--list', 'ls', is_flag=True, help='List themes')
-def theme(new, ls):
+def theme(theme, ls):
   if ls:
-    for theme in list_themes():
-      print("+ %s" % theme)
-
-  if new is None:
+    for th in Theme.list():
+      click.echo("%s" % th.rstrip(".toml"))
     return
 
-  fwrite("%s/%s.toml" % (THEMES, new), toml.dumps(THEME_TEMPLATE))
-  pass
-
+  Theme(name=theme).save()
 
 @click.command("generator", help="manange generators")
-@click.option('--new', 'new', help='New generator name')
+@click.argument('generator')
 @click.option('--list', 'ls', is_flag=True, help='List generators')
 @click.option('--target', 'target', default='', help='target config file')
-def generator(new, ls, target):
+def generator(generator, ls, target):
   if ls:
-    for g in [f for f in os.listdir(GENERATORS) if isdir(join(GENERATORS, f))]:
-      print("+ %s" % g)
-
-  if new is None:
+    for g in Generator.list():
+      click.echo("%s" % g)
     return
 
-  path = "%s/%s" % ( GENERATORS, new)
-  os.mkdir(path)
+  Generator(generator, target).save()
 
-  hooks = ["%s/pre-apply.sh" % path, "%s/post-apply.sh" % path]
-  settings = toml.dumps(GEN_SETTINGS_TEMPLATE) % (new, target, *hooks)
-
-  fwrite("%s/%s.toml" % (path, "settings"), settings)
-  touch("%s/%s.jinja" % (path, "template"))
-
-  for h in hooks:
-    fwrite(h, HOOK_SHEBANG)
-    os.chmod(h, 755)
-  pass
-
-
-@click.command("apply", help="apply themes")
-@click.option('--theme', 'theme', help='theme to apply')
+@click.command("apply", help="apply theme")
+@click.argument("theme")
 def apply(theme):
+  theme = Theme.load(theme)
+
   if theme is None:
     return
 
-  path = "%s/%s.toml" % (THEMES, theme)
+  for gen in Generator.list():
+    gen = Generator.load(gen)
 
-  if not isfile(path):
-    print("[-] theme %s does not exists" % theme)
-
-  theme = {}
-
-  with open(path, 'r') as fd:
-    theme = toml.loads(fd.read())
-
-  gens = load_generators()
-
-  for g in gens.keys():
-    apply_theme(theme, gens[g])
-
+    if gen is not None:
+      gen.apply(theme)
 
 def main():
   cli.add_command(theme)
