@@ -12,6 +12,12 @@ XTHEME_DIR = os.getenv('XTHEME_DIR', os.getenv('HOME') + '/.config/xtheme')
 THEMES     = XTHEME_DIR + "/themes"
 GENERATORS = XTHEME_DIR + "/generators"
 
+GEN_SETTINGS_TEMPLATE = {
+  'settings': { 'name': '', 'target': '', 'pre-apply': '', 'post-apply': '' }
+}
+
+THEME_TEMPLATE = {'colors': {'color%d' % i: '#fff' for i in range(0, 15)}}
+
 if not isdir(XTHEME_DIR):
   os.mkdir(XTHEME_DIR)
   os.mkdir(XTHEME_DIR + "/themes")
@@ -90,7 +96,7 @@ def theme(new, ls):
     print("theme name required")
     sys.exit(1)
 
-  touch("%s/%s.toml" % (THEMES, new))
+  fwrite("%s/%s.toml" % (THEMES, new), toml.dumps(THEME_TEMPLATE))
   pass
 
 
@@ -107,7 +113,7 @@ def generator(new, ls):
 
   path = "%s/%s" % ( GENERATORS, new)
   os.mkdir(path)
-  touch("%s/%s.toml" % (path, "settings"))
+  fwrite("%s/%s.toml" % (path, "settings"), toml.dumps(GEN_SETTINGS_TEMPLATE))
   touch("%s/%s.jinja" % (path, "template"))
   touch("%s/pre-apply.sh" % path)
   touch("%s/post-apply.sh" % path)
