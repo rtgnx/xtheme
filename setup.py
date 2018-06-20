@@ -4,7 +4,7 @@ with open("README.md", "r") as fd:
     long_description = fd.read()
 
 setup(name='xtheme',
-    version='0.2',
+    version='0.3',
     description='theme generator',
     long_description=long_description,
     long_description_content_type="text/markdown",
