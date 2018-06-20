@@ -11,6 +11,7 @@ from os.path import isdir, isfile, join
 XTHEME_DIR = os.getenv('XTHEME_DIR', os.getenv('HOME') + '/.config/xtheme')
 THEMES     = XTHEME_DIR + "/themes"
 GENERATORS = XTHEME_DIR + "/generators"
+HOOK_SHEBANG = "#!/bin/sh"
 
 GEN_SETTINGS_TEMPLATE = {
   'settings': {
@@ -120,8 +121,8 @@ def generator(new, ls, target):
   touch("%s/%s.jinja" % (path, "template"))
 
   for h in hooks:
-    touch(h)
-    os.chmod(h, 744)
+    fwrite(h, HOOK_SHEBANG)
+    os.chmod(h, 755)
   pass
 
 
