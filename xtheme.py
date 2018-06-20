@@ -92,9 +92,8 @@ def theme(new, ls):
     for theme in list_themes():
       print("+ %s" % theme)
 
-  if new is not None:
-    print("theme name required")
-    sys.exit(1)
+  if new is None:
+    return
 
   fwrite("%s/%s.toml" % (THEMES, new), toml.dumps(THEME_TEMPLATE))
   pass
