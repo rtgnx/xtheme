@@ -24,10 +24,8 @@ class Theme(object):
       return t
 
     t = toml.loads(t)
-    if 'theme' not in t.keys():
-      return None
 
-    return Theme(name=name.rstrip('.toml'), ctx=dotdict(t))
+    return Theme(name=name.rsplit('.', 1)[0], ctx=dotdict(t))
 
   def list():
     return [f for f in listdir(THEMES) if isfile(join(THEMES, f))]
