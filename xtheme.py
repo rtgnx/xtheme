@@ -33,9 +33,6 @@ def fread(fpath):
     return fd.read()
 
 def fwrite(fpath, data):
-  if not isfile(fpath):
-    return
-
   with open(fpath, 'w') as fd:
     fd.write(data)
 
