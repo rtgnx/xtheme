@@ -50,11 +50,10 @@ def load_generators():
     gens[g] = {'template':  fread(join(GENERATORS, 'template.jinja'))}
     settings = toml.loads(fread(join(GENERATORS, 'settings.toml')))
 
-    if not has_keys(settings, ['name', 'target', 'pre-apply', 'post-apply']):
+    gens[g] = {**gens[g], **settings}
+    if not has_keys(gens[g], ['name', 'target', 'pre-apply', 'post-apply']):
       del gens[g]
       continue
-
-    gens[g]['settings'] = settings
 
   return gens
 
