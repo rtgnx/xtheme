@@ -26,25 +26,13 @@ def cli():
 
 @click.command("theme", help="manage themes")
 @click.argument("theme")
-@click.option('--list', 'ls', is_flag=True, help='List themes')
-def theme(theme, ls):
-  if ls:
-    for th in Theme.list():
-      click.echo("%s" % th.rstrip(".toml"))
-    return
-
+def theme(theme):
   Theme(name=theme).save()
 
 @click.command("generator", help="manange generators")
 @click.argument('generator')
-@click.option('--list', 'ls', is_flag=True, help='List generators')
 @click.option('--target', 'target', default='', help='target config file')
-def generator(generator, ls, target):
-  if ls:
-    for g in Generator.list():
-      click.echo("%s" % g)
-    return
-
+def generator(generator, target):
   Generator(generator, target).save()
 
 @click.command("apply", help="apply theme")
@@ -61,10 +49,22 @@ def apply(theme):
     if gen is not None:
       gen.apply(theme)
 
+@click.command("list", help="list resources")
+@click.option("--theme", "theme", is_flag=True, help="List available themes")
+@click.option("--gen", "gen", is_flag=True, help="List available generators")
+def _list(theme, gen):
+  if theme:
+    for th in Theme.list():
+      click.echo("%s" % th.rsplit('.', 1)[0])
+  if gen:
+    for g in Generator.list():
+      click.echo("%s" % g)
+
 def main():
   cli.add_command(theme)
   cli.add_command(generator)
   cli.add_command(apply)
+  cli.add_command(_list)
 
   cli()
   return 0
