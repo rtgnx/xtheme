@@ -74,8 +74,7 @@ def exec_script(path, stderr=False):
 
 def apply_theme(theme, gen):
   exec_script(gen['settings']['pre-apply'])
-  Template(gen['template'])
-  res = Template.render(**theme)
+  res = Template(gen['template']).render(**theme)
   fwrite(gen['settings']['target'], res)
 
 
