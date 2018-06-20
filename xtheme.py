@@ -103,9 +103,8 @@ def generator(new, ls):
     for g in [f for f in os.listdir(GENERATORS) if isdir(join(GENERATORS, f))]:
       print("+ %s" % g)
 
-  if new is not None:
-    print("theme name required")
-    sys.exit(1)
+  if new is None:
+    return
 
   path = "%s/%s" % ( GENERATORS, new)
   os.mkdir(path)
