@@ -83,7 +83,7 @@ def cli():
   pass
 
 
-@click.command()
+@click.command("theme", help="manage themes")
 @click.option('--new', 'new', help='New theme name')
 @click.option('--list', 'ls', is_flag=True, help='List themes')
 def theme(new, ls):
@@ -98,7 +98,7 @@ def theme(new, ls):
   pass
 
 
-@click.command()
+@click.command("generator", help="manange generators")
 @click.option('--new', 'new', help='New generator name')
 @click.option('--list', 'ls', is_flag=True, help='List generators')
 @click.option('--target', 'target', default='', help='target config file')
@@ -125,7 +125,7 @@ def generator(new, ls, target):
   pass
 
 
-@click.command()
+@click.command("apply", help="apply themes")
 @click.option('--theme', 'theme', help='theme to apply')
 def apply(theme):
   if theme is None:
