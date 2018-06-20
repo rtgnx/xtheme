@@ -24,16 +24,19 @@ class Generator(object):
       with open(target, 'r') as fd:
         self.template = fd.read()
 
+    elif self.template is None:
+      self.template = ''
+
   def save(self):
     root = join(GENERATORS, self.name)
     if not isdir(root):
-      mkdir(root, 755)
+      mkdir(root, 0o744)
 
     for h in HOOKS:
       path = join(root, h + '.sh')
       if not isfile(path):
         fwrite(join(path), HOOK_SHEBANG)
-        chmod(path, 755)
+        chmod(path, 0o744)
 
     fwrite(join(root, 'config.toml'), self.__toml__())
     fwrite(join(root, 'template.jinja2'), self.template)
