@@ -13,7 +13,9 @@ THEMES     = XTHEME_DIR + "/themes"
 GENERATORS = XTHEME_DIR + "/generators"
 
 GEN_SETTINGS_TEMPLATE = {
-  'settings': { 'name': '', 'target': '', 'pre-apply': '', 'post-apply': '' }
+  'settings': {
+    'name': '%s', 'target': '%s', 'pre-apply': '%s', 'post-apply': '%s'
+  }
 }
 
 THEME_TEMPLATE = {'colors': {'color%d' % i: '#fff' for i in range(0, 15)}}
@@ -99,7 +101,8 @@ def theme(new, ls):
 @click.command()
 @click.option('--new', 'new', help='New generator name')
 @click.option('--list', 'ls', is_flag=True, help='List generators')
-def generator(new, ls):
+@click.option('--target', 'target', default='', help='target config file')
+def generator(new, ls, target):
   if ls:
     for g in [f for f in os.listdir(GENERATORS) if isdir(join(GENERATORS, f))]:
       print("+ %s" % g)
@@ -109,10 +112,16 @@ def generator(new, ls):
 
   path = "%s/%s" % ( GENERATORS, new)
   os.mkdir(path)
-  fwrite("%s/%s.toml" % (path, "settings"), toml.dumps(GEN_SETTINGS_TEMPLATE))
+
+  hooks = ["%s/pre-apply.sh" % path, "%s/post-apply.sh" % path]
+  settings = toml.dumps(GEN_SETTINGS_TEMPLATE) % (new, target, *hooks)
+
+  fwrite("%s/%s.toml" % (path, "settings"), settings)
   touch("%s/%s.jinja" % (path, "template"))
-  touch("%s/pre-apply.sh" % path)
-  touch("%s/post-apply.sh" % path)
+
+  for h in hooks:
+    touch(h)
+    os.chmod(h, 744)
   pass
 
 
