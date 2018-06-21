@@ -15,7 +15,7 @@ class Theme(object):
     self.ctx = ctx
 
   def save(self):
-    fwrite(join(THEMES, self.name), self.__toml__())
+    fwrite(join(THEMES, self.name + '.toml'), self.__toml__())
 
   def load(name):
     t = fread(join(THEMES, name))
