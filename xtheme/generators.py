@@ -15,8 +15,9 @@ GENERATORS   = XTHEME_DIR + "/generators"
 
 class Generator(object):
 
-  def __init__(self, name, target, template=None):
+  def __init__(self, name, target, conf={}, template=None):
     self.name = name
+    self.conf = conf
     self.target = target
     self.template = template
 
@@ -49,17 +50,17 @@ class Generator(object):
       printf("[-] Template file missing in: %s" % name)
       return None
 
-    conf = toml.loads(fread(join(root, 'config.toml')))
+    config = toml.loads(fread(join(root, 'config.toml')))
 
-    if 'config' not in conf.keys():
+    if 'config' not in config.keys():
       print("[-] Invalid config file in: %s" % name)
       return None
 
-    conf = conf['config']
+    conf = config['config']
     if not has_keys(conf, ['name', 'target']):
       return None
 
-    return Generator(name=conf['name'], target=conf['target'], template=temp)
+    return Generator(conf['name'], conf['target'], conf=config, template=temp)
 
   def list():
     return [f for f in listdir(GENERATORS) if isdir(join(GENERATORS, f))]
@@ -73,6 +74,11 @@ class Generator(object):
     out = check_output([join(root, 'pre-apply.sh')])
     res = Template(self.template).render(theme.ctx)
     fwrite(self.target, res)
+
+    if 'targets' in self.conf.keys() and type(self.conf['targets']) == dict:
+      for k, v in self.conf['targets'].items():
+        fwrite(v, Template(fread(join(root, k + '.jinja2'))).render(theme.ctx))
+
     out = check_output([join(root, 'post-apply.sh')])
     pass
   pass
