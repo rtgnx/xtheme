@@ -15,11 +15,12 @@ name = "xtheme"
 
 XTHEME_DIR = getenv('XTHEME_DIR', getenv('HOME') + '/.config/xtheme')
 
-if not isdir(XTHEME_DIR):
-  os.mkdir(XTHEME_DIR)
-  for d in ['themes', 'generators']:
-    if not isdir(join("%s/%s" % (XTHEME_DIR, d))):
-      os.mkdir(join("%s/%s" % (XTHEME_DIR, d)))
+def init_config(path):
+  if not isdir(path):
+    os.mkdir(path)
+    for d in ['themes', 'generators']:
+      if not isdir(join("%s/%s" % (path, d))):
+        os.mkdir(join("%s/%s" % (path, d)))
 
 @click.group()
 def cli():
@@ -69,6 +70,8 @@ def _list(theme, gen):
       click.echo("%s" % g)
 
 def main():
+  init_config(XTHEME_DIR)
+
   cli.add_command(theme)
   cli.add_command(generator)
   cli.add_command(apply)
