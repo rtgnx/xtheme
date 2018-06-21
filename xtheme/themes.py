@@ -18,12 +18,20 @@ class Theme(object):
     fwrite(join(THEMES, self.name + '.toml'), self.__toml__())
 
   def load(name):
+    base = {}
+
+    if isfile(join(XTHEME_DIR, 'base.toml')):
+      base = toml.loads(fread(join(XTHEME_DIR, 'base.toml')))
+
     t = fread(join(THEMES, name))
 
     if t is None:
       return t
 
     t = toml.loads(t)
+
+    if type(base) == dict:
+      t = {**base, **t}
 
     return Theme(name=name.rsplit('.', 1)[0], ctx=dotdict(t))
 
