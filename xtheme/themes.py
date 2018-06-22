@@ -1,7 +1,7 @@
 import toml
 
 from os import listdir, getenv
-from os.path import isfile, join
+from os.path import isfile, join, expandvars
 
 from .helpers import fwrite, fread, dotdict
 
@@ -21,7 +21,7 @@ class Theme(object):
     base = {}
 
     if isfile(join(XTHEME_DIR, 'base.toml')):
-      base = toml.loads(fread(join(XTHEME_DIR, 'base.toml')))
+      base = toml.loads(expandvars(fread(join(XTHEME_DIR, 'base.toml'))))
 
     t = fread(join(THEMES, name))
 

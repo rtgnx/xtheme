@@ -5,7 +5,7 @@ from .helpers import fread, fwrite, has_keys
 from jinja2 import Template
 from subprocess import check_output
 from os import listdir, mkdir, makedirs, chmod, getenv
-from os.path import isfile, isdir, join, split
+from os.path import isfile, isdir, join, split, expandvars
 
 
 XTHEME_DIR   = getenv('XTHEME_DIR', getenv('HOME') + '/.config/xtheme')
@@ -50,7 +50,7 @@ class Generator(object):
       printf("[-] Template file missing in: %s" % name)
       return None
 
-    config = toml.loads(fread(join(root, 'config.toml')))
+    config = toml.loads(expandvars(fread(join(root, 'config.toml'))))
 
     if 'config' not in config.keys():
       print("[-] Invalid config file in: %s" % name)
@@ -73,12 +73,17 @@ class Generator(object):
     ctx = {**self.conf, **theme.ctx}
     root = join(GENERATORS, self.name)
     out = check_output([join(root, 'pre-apply.sh')], cwd=root)
-    res = Template(self.template).render(ctx)
+    res = Template(expandvars(self.template)).render(ctx)
     fwrite(self.target, res)
 
     if 'targets' in self.conf.keys() and type(self.conf['targets']) == dict:
       for k, v in self.conf['targets'].items():
-        res = Template(fread(join(root, k + '.jinja2'))).render(ctx)
+        res = None
+        try:
+          res = Template(fread(join(root, k + '.jinja2'))).render(ctx)
+        except:
+          print("[-] Unable to compile %s.jinja2" % k)
+          continue
 
         try:
           fwrite(v, res)
