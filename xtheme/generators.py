@@ -4,8 +4,8 @@ from .helpers import fread, fwrite, has_keys
 
 from jinja2 import Template
 from subprocess import check_output
-from os import listdir, mkdir, chmod, getenv
-from os.path import isfile, isdir, join
+from os import listdir, mkdir, makedirs, chmod, getenv
+from os.path import isfile, isdir, join, split
 
 
 XTHEME_DIR   = getenv('XTHEME_DIR', getenv('HOME') + '/.config/xtheme')
@@ -70,15 +70,25 @@ class Generator(object):
     pass
 
   def apply(self, theme):
+    ctx = {**self.conf, **theme.ctx}
     root = join(GENERATORS, self.name)
-    out = check_output([join(root, 'pre-apply.sh')])
-    res = Template(self.template).render(theme.ctx)
+    out = check_output([join(root, 'pre-apply.sh')], cwd=root)
+    res = Template(self.template).render(ctx)
     fwrite(self.target, res)
 
     if 'targets' in self.conf.keys() and type(self.conf['targets']) == dict:
       for k, v in self.conf['targets'].items():
-        fwrite(v, Template(fread(join(root, k + '.jinja2'))).render(theme.ctx))
+        res = Template(fread(join(root, k + '.jinja2'))).render(ctx)
 
-    out = check_output([join(root, 'post-apply.sh')])
+        try:
+          fwrite(v, res)
+        except FileNotFoundError:
+          path, fname = split(v)
+          makedirs(path, 0o744)
+
+        finally:
+          fwrite(v, res)
+
+    out = check_output([join(root, 'post-apply.sh')], cwd=root)
     pass
   pass
